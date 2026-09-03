@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Pad Koi? | Find Sanitary Pads Near You</title>
+  <meta name="description" content="Pad Koi helps you find nearby places where sanitary pads are available." />
+  <meta name="theme-color" content="#e83e8c" />
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    :root {
+      --pink: #e83e8c;
+      --pink-dark: #b91c62;
+      --pink-light: #fce7f3;
+      --pink-soft: #fff4f9;
+      --purple: #8b5cf6;
+      --green: #16a34a;
+      --orange: #f59e0b;
+      --red: #dc2626;
+      --text: #252525;
+      --muted: #6b7280;
+      --border: #eadde4;
+      --white: #ffffff;
+      --bg: #fff8fb;
+      --shadow: 0 12px 35px rgba(185, 28, 98, 0.10);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    /* NAVBAR */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(234, 221, 228, 0.8);
+    }
+
+    .nav {
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.6px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: var(--pink);
+      color: white;
+      box-shadow: 0 8px 20px rgba(232, 62, 140, 0.25);
+    }
+
+    .logo small {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0;
+      margin-top: -5px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+    }
+
+    nav a {
+      font-size: 14px;
+      font-weight: 650;
+      color: #4b5563;
+      transition: .2s;
+    }
+
+    nav a:hover {
+      color: var(--pink);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .language-btn,
+    .menu-btn {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-weight: 700;
+    }
+
+    .menu-btn {
+      display: none;
+    }
+
+    /* HERO */
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 82px 0 60px;
+      background:
+        radial-gradient(circle at 85% 20%, rgba(232, 62, 140, .14), transparent 25%),
+        radial-gradient(circle at 5% 80%, rgba(139, 92, 246, .09), transparent 25%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      align-items: center;
+      gap: 55px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--pink-light);
+      color: var(--pink-dark);
+      border-radius: 100px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      font-size: clamp(44px, 6vw, 74px);
+      line-height: .98;
+      letter-spacing: -4px;
+      max-width: 720px;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 span {
+      color: var(--pink);
+    }
+
+    .hero p {
+      max-width: 590px;
+      color: var(--muted);
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    .search-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 8px;
+      display: flex;
+      max-width: 650px;
+      box-shadow: var(--shadow);
+    }
+
+    .search-box input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      padding: 15px;
+      font-size: 15px;
+      background: transparent;
+    }
+
+    .search-box button {
+      border: 0;
+      background: var(--pink);
+      color: white;
+      border-radius: 13px;
+      padding: 0 20px;
+      font-weight: 800;
+    }
+
+    .location-btn {
+      margin-top: 12px;
+      border: 0;
+      background: transparent;
+      color: var(--pink-dark);
+      font-weight: 750;
+      padding: 4px;
+    }
+
+    .hero-map-card {
+      background: white;
+      padding: 10px;
+      border-radius: 30px;
+      box-shadow: 0 25px 70px rgba(185, 28, 98, .16);
+      transform: rotate(1deg);
+    }
+
+    #heroMap {
+      height: 430px;
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .map-badge {
+      position: absolute;
+      z-index: 500;
+      background: white;
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 25px rgba(0,0,0,.12);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge-top {
+      top: 25px;
+      right: 25px;
+    }
+
+    /* BUTTONS */
+
+    .btn {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 17px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--pink);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--pink-light);
+      color: var(--pink-dark);
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: var(--red);
+    }
+
+    /* SECTIONS */
+
+    section {
+      padding: 80px 0;
+    }
+
+    .section-heading {
+      margin-bottom: 30px;
+    }
+
+    .section-heading.center {
+      text-align: center;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(30px, 4vw, 46px);
+      line-height: 1.1;
+      letter-spacing: -1.8px;
+      margin-bottom: 10px;
+    }
+
+    .section-heading p {
+      color: var(--muted);
+      max-width: 650px;
+    }
+
+    .center p {
+      margin: auto;
+    }
+
+    /* QUICK FEATURES */
+
+    .features {
+      padding-top: 25px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .feature-card {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 25px;
+      border-radius: var(--radius);
+      transition: .25s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: var(--pink-light);
+      color: var(--pink-dark);
+      font-size: 22px;
+      margin-bottom: 17px;
+    }
+
+    .feature-card h3 {
+      margin-bottom: 6px;
+    }
+
+    .feature-card p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* FIND SECTION */
+
+    .finder {
+      background: white;
+    }
+
+    .finder-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      min-height: 650px;
+    }
+
+    .finder-sidebar {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .sidebar-head {
+      padding: 18px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-head h3 {
+      margin-bottom: 10px;
+    }
+
+    .mini-search {
+      display: flex;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .mini-search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      padding: 11px;
+    }
+
+    .mini-search button {
+      border: 0;
+      background: var(--pink);
+      color: white;
+      width: 48px;
+    }
+
+    .filters {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: white;
+    }
+
+    .filters-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 900;
+      color: var(--muted);
+      margin-bottom: 9px;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .filter-chip {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 100px;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .filter-chip.active {
+      background: var(--pink-light);
+      border-color: #f3a5c7;
+      color: var(--pink-dark);
+    }
+
+    .store-list {
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .store-card {
+      background: white;
+      padding: 17px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .store-card:hover {
+      background: #fff9fc;
+    }
+
+    .store-card.active {
+      border-left: 4px solid var(--pink);
+      padding-left: 13px;
+      background: #fff6fa;
+    }
+
+    .store-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .store-name {
+      font-weight: 850;
+      font-size: 15px;
+    }
+
+    .distance {
+      color: var(--pink-dark);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .store-type {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .store-address {
+      color: #4b5563;
+      font-size: 12px;
+      margin: 7px 0;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .status.closed .status-dot {
+      background: var(--red);
+    }
+
+    .verified {
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      margin-left: 7px;
+    }
+
+    .store-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .small-btn {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 8px;
+      padding: 6px 9px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .small-btn.primary {
+      background: var(--pink);
+      color: white;
+      border-color: var(--pink);
+    }
+
+    .map-panel {
+      position: relative;
+      border-radius: 22px;
+      overflow: hidden;
+      min-height: 650px;
+      border: 1px solid var(--border);
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      min-height: 650px;
+    }
+
+    .map-controls {
+      position: absolute;
+      z-index: 500;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      gap: 7px;
+    }
+
+    .map-control {
+      background: white;
+      border: 1px solid var(--border);
+      box-shadow: 0 7px 20px rgba(0,0,0,.1);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* EMERGENCY */
+
+    .emergency {
+      background:
+        linear-gradient(135deg, #fff1f2, #fff8fb);
+    }
+
+    .emergency-box {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 30px;
+      background: white;
+      border: 1px solid #fecdd3;
+      border-radius: 26px;
+      padding: 35px;
+      box-shadow: var(--shadow);
+    }
+
+    .emergency-box h2 {
+      font-size: 32px;
+      letter-spacing: -1px;
+      margin-bottom: 7px;
+    }
+
+    .emergency-box p {
+      color: var(--muted);
+      max-width: 700px;
+    }
+
+    /* KNOWLEDGE */
+
+    .knowledge-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .article {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .article-number {
+      color: var(--pink);
+      font-weight: 900;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .article h3 {
+      margin-bottom: 8px;
+    }
+
+    .article p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* IMPACT */
+
+    .impact {
+      background: #20131a;
+      color: white;
+    }
+
+    .impact .section-heading p {
+      color: #c9bdc3;
+    }
+
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .impact-stat {
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius: 20px;
+      padding: 25px;
+    }
+
+    .impact-stat strong {
+      display: block;
+      font-size: 38px;
+      letter-spacing: -1px;
+      margin-bottom: 5px;
+    }
+
+    .impact-stat span {
+      color: #c9bdc3;
+      font-size: 13px;
+    }
+
+    .demo-note {
+      margin-top: 20px;
+      color: #a99da3;
+      font-size: 11px;
+    }
+
+    /* ABOUT */
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .about-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .about-card h3 {
+      margin-bottom: 12px;
+    }
+
+    .about-card p {
+      color: var(--muted);
+    }
+
+    .sdg-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    .sdg {
+      border-radius: 100px;
+      padding: 8px 12px;
+      background: var(--pink-light);
+      color: var(--pink-dark);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    /* FOOTER */
+
+    footer {
+      background: #160d12;
+      color: white;
+      padding: 50px 0 25px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 50px;
+      padding-bottom: 35px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+
+    footer .logo {
+      margin-bottom: 14px;
+    }
+
+    footer p {
+      color: #b7aab1;
+      font-size: 13px;
+      max-width: 450px;
+    }
+
+    footer h4 {
+      margin-bottom: 12px;
+    }
+
+    footer a {
+      display: block;
+      color: #b7aab1;
+      font-size: 13px;
+      margin: 6px 0;
+    }
+
+    footer a:hover {
+      color: white;
+    }
+
+    .copyright {
+      color: #877982;
+      font-size: 11px;
+      padding-top: 20px;
+    }
+
+    /* MODAL */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 10, 15, .55);
+      backdrop-filter: blur(5px);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      width: min(520px, 100%);
+      background: white;
+      border-radius: 24px;
+      padding: 28px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 100px rgba(0,0,0,.25);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .close-btn {
+      border: 0;
+      background: #f3f4f6;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 11px;
+      outline: none;
+    }
+
+    .form-group textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 5000;
+      background: #24151c;
+      color: white;
+      border-radius: 13px;
+      padding: 13px 17px;
+      font-size: 13px;
+      font-weight: 650;
+      box-shadow: 0 15px 40px rgba(0,0,0,.2);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: .3s;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 900px) {
+      nav {
+        display: none;
+      }
+
+      .menu-btn {
+        display: block;
+      }
+
+      .hero-grid,
+      .about-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 55px;
+      }
+
+      .hero-map-card {
+        transform: none;
+      }
+
+      .feature-grid,
+      .knowledge-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .finder-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .finder-sidebar {
+        min-height: auto;
+      }
+
+      .store-list {
+        max-height: 390px;
+      }
+
+      .map-panel {
+        min-height: 500px;
+      }
+
+      #map {
+        min-height: 500px;
+      }
+
+      .impact-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: min(100% - 22px, 1180px);
+      }
+
+      .nav {
+        height: 66px;
+      }
+
+      .hero h1 {
+        font-size: 48px;
+        letter-spacing: -2.5px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .search-box {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .search-box button {
+        height: 48px;
+      }
+
+      #heroMap {
+        height: 320px;
+      }
+
+      section {
+        padding: 55px 0;
+      }
+
+      .feature-grid,
+      .knowledge-grid,
+      .impact-grid,
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .emergency-box {
+        grid-template-columns: 1fr;
+        padding: 25px;
+      }
+
+      .emergency-box h2 {
+        font-size: 27px;
+      }
+
+      .nav-actions .language-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVIGATION -->
+  <header>
+    <div class="container nav">
+      <a href="#" class="logo">
+        <span class="logo-icon">⌁</span>
+        <span>
+          Pad Koi
+          <small>by ScriptySphere</small>
+        </span>
+      </a>
+
+      <nav>
+        <a href="#find">Find Pads</a>
+        <a href="#emergency">Emergency</a>
+        <a href="#knowledge">Knowledge</a>
+        <a href="#about">About</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="language-btn" id="languageBtn">বাংলা</button>
+        <button class="btn btn-primary" onclick="openAddStore()">Add a Store</button>
+        <button class="menu-btn" onclick="toggleMobileMenu()">☰</button>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- HERO -->
+  <main>
+
+    <section class="hero">
+      <div class="container hero-grid">
+
+        <div>
+          <div class="eyebrow">
+            ● Menstrual health accessibility
+          </div>
+
+          <h1>
+            Pad Koi?<br />
+            <span>Find pads near you.</span>
+          </h1>
+
+          <p>
+            A simple way to discover nearby stores, pharmacies and emergency
+            access points where sanitary pads may be available.
+          </p>
+
+          <div class="search-box">
+            <input
+              id="heroSearch"
+              type="text"
+              placeholder="Search your area, store or product..."
+              onkeydown="if(event.key==='Enter') searchStores()"
+            />
+            <button onclick="searchStores()">Find Pads</button>
+          </div>
+
+          <button class="location-btn" onclick="useMyLocation()">
+            ◎ Use my current location
+          </button>
+        </div>
+
+        <div class="hero-map-card">
+          <div style="position:relative;">
+            <div class="map-badge badge-top">
+              ● Live map
+            </div>
+            <div id="heroMap"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- QUICK FEATURES -->
+    <section class="features">
+      <div class="container">
+        <div class="feature-grid">
+
+          <div class="feature-card">
+            <div class="feature-icon">⌖</div>
+            <h3>Find Nearby</h3>
+            <p>
+              Discover nearby places that may sell sanitary pads using
+              location-based search.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">✓</div>
+            <h3>Community Verified</h3>
+            <p>
+              Help improve the map by reporting whether a listed location
+              still has products available.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">♡</div>
+            <h3>Built for Everyone</h3>
+            <p>
+              Pad Koi is designed to be useful for women, men, girls and boys
+              looking for menstrual products.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- FINDER -->
+    <section class="finder" id="find">
+      <div class="container">
+
+        <div class="section-heading">
+          <h2>Find pads around you.</h2>
+          <p>
+            Search, filter and navigate to nearby locations.
+          </p>
+        </div>
+
+        <div class="finder-layout">
+
+          <aside class="finder-sidebar">
+
+            <div class="sidebar-head">
+              <h3 id="resultTitle">Nearby locations</h3>
+
+              <div class="mini-search">
+                <input
+                  id="storeSearch"
+                  placeholder="Search stores or areas..."
+                  oninput="filterStores()"
+                />
+                <button onclick="filterStores()">⌕</button>
+              </div>
+            </div>
+
+            <div class="filters">
+
+              <div class="filters-title">Filter</div>
+
+              <div class="filter-row">
+                <button class="filter-chip active" data-filter="all">
+                  All
+                </button>
+
+                <button class="filter-chip" data-filter="open">
+                  Open now
+                </button>
+
+                <button class="filter-chip" data-filter="verified">
+                  Verified
+                </button>
+
+                <button class="filter-chip" data-filter="pharmacy">
+                  Pharmacy
+                </button>
+
+                <button class="filter-chip" data-filter="supermarket">
+                  Supermarket
+                </button>
+
+                <button class="filter-chip" data-filter="emergency">
+                  Emergency
+                </button>
+              </div>
+
+            </div>
+
+            <div class="store-list" id="storeList"></div>
+
+          </aside>
+
+          <div class="map-panel">
+            <div class="map-controls">
+              <button class="map-control" onclick="useMyLocation()">
+                ◎ Locate me
+              </button>
+              <button class="map-control" onclick="resetMap()">
+                Reset
+              </button>
+            </div>
+
+            <div id="map"></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- EMERGENCY -->
+    <section class="emergency" id="emergency">
+      <div class="container">
+
+        <div class="emergency-box">
+          <div>
+            <div class="eyebrow">Emergency access</div>
+
+            <h2>Need a pad right now?</h2>
+
+            <p>
+              Use emergency mode to prioritise nearby locations that are
+              marked as open or emergency access points.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" onclick="activateEmergency()">
+            Find Emergency Access
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- KNOWLEDGE -->
+    <section id="knowledge">
+      <div class="container">
+
+        <div class="section-heading center">
+          <h2>Menstrual health, made simple.</h2>
+          <p>
+            Reliable, accessible information can help people make informed
+            decisions and reduce stigma.
+          </p>
+        </div>
+
+        <div class="knowledge-grid">
+
+          <article class="article">
+            <div class="article-number">01</div>
+            <h3>What is menstruation?</h3>
+            <p>
+              Menstruation is a normal biological process. Learning about it
+              helps create healthier and more supportive communities.
+            </p>
+          </article>
+
+          <article class="article">
+            <div class="article-number">02</div>
+            <h3>Choosing menstrual products</h3>
+            <p>
+              Different people may prefer different products. Availability,
+              comfort, affordability and personal needs all matter.
+            </p>
+          </article>
+
+          <article class="article">
+            <div class="article-number">03</div>
+            <h3>Hygiene & disposal</h3>
+            <p>
+              Good menstrual hygiene includes access to clean facilities,
+              appropriate products and safe disposal options.
+            </p>
+          </article>
+
+          <article class="article">
+            <div class="article-number">04</div>
+            <h3>Breaking the stigma</h3>
+            <p>
+              Menstruation should be discussed respectfully and without
+              shame. Everyone can contribute to more supportive communities.
+            </p>
+          </article>
+
+          <article class="article">
+            <div class="article-number">05</div>
+            <h3>Supporting someone</h3>
+            <p>
+              A small act of support, such as helping someone find a product,
+              can make access easier when they need it.
+            </p>
+          </article>
+
+          <article class="article">
+            <div class="article-number">06</div>
+            <h3>When to seek help</h3>
+            <p>
+              If someone has menstrual symptoms that concern them or interfere
+              significantly with daily life, they can consider speaking with
+              a qualified healthcare professional.
+            </p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- IMPACT -->
+    <section class="impact">
+      <div class="container">
+
+        <div class="section-heading">
+          <h2>Small searches. Bigger impact.</h2>
+          <p>
+            Pad Koi aims to reduce the information and discoverability gap
+            around menstrual product access.
+          </p>
+        </div>
+
+        <div class="impact-grid">
+
+          <div class="impact-stat">
+            <strong id="statLocations">24+</strong>
+            <span>Demo locations mapped</span>
+          </div>
+
+          <div class="impact-stat">
+            <strong>3</strong>
+            <span>Core access pathways</span>
+          </div>
+
+          <div class="impact-stat">
+            <strong>24/7</strong>
+            <span>Digital discovery</span>
+          </div>
+
+          <div class="impact-stat">
+            <strong>SDG</strong>
+            <span>3 · 5 · 6 aligned</span>
+          </div>
+
+        </div>
+
+        <div class="demo-note">
+          Demo figures shown for prototype purposes. They are not real impact
+          claims.
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="container about-grid">
+
+        <div>
+          <div class="eyebrow">About Pad Koi</div>
+
+          <h2 style="font-size:42px;line-height:1.1;letter-spacing:-1.5px;margin-bottom:18px;">
+            Finding a menstrual product should not be unnecessarily difficult.
+          </h2>
+
+          <p style="color:var(--muted);">
+            Pad Koi is a digital menstrual health accessibility initiative
+            by ScriptySphere. The platform focuses on one practical problem:
+            helping people discover where menstrual products may be available
+            around them.
+          </p>
+
+          <div class="sdg-list">
+            <span class="sdg">SDG 3 · Good Health</span>
+            <span class="sdg">SDG 5 · Gender Equality</span>
+            <span class="sdg">SDG 6 · Clean Water</span>
+            <span class="sdg">SDG 4 · Education</span>
+          </div>
+        </div>
+
+        <div class="about-card">
+          <h3>Our approach</h3>
+
+          <p>
+            Pad Koi combines location intelligence, community participation
+            and menstrual health information into one accessible digital
+            experience.
+          </p>
+
+          <br />
+
+          <p>
+            The platform does not replace healthcare services or solve every
+            menstrual health barrier. Instead, it targets a specific gap:
+            discoverability and navigation to potential sources of menstrual
+            products.
+          </p>
+
+          <br />
+
+          <button class="btn btn-primary" onclick="openAddStore()">
+            Help Map a Store
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+
+      <div class="footer-grid">
+
+        <div>
+          <div class="logo">
+            <span class="logo-icon">⌁</span>
+            <span>
+              Pad Koi
+              <small style="color:#9d8e96;">by ScriptySphere</small>
+            </span>
+          </div>
+
+          <p>
+            A menstrual health accessibility initiative making it easier to
+            discover nearby menstrual product access points.
+          </p>
+        </div>
+
+        <div>
+          <h4>Explore</h4>
+          <a href="#find">Find Pads</a>
+          <a href="#emergency">Emergency Access</a>
+          <a href="#knowledge">Knowledge Hub</a>
+          <a href="#about">About Pad Koi</a>
+        </div>
+
+        <div>
+          <h4>Participate</h4>
+          <a href="#" onclick="openAddStore(); return false;">Add a Store</a>
+          <a href="#" onclick="showToast('Store owner tools are coming soon.'); return false;">
+            Claim a Store
+          </a>
+          <a href="#" onclick="showToast('Community reporting is coming soon.'); return false;">
+            Report Availability
+          </a>
+        </div>
+
+      </div>
+
+      <div class="copyright">
+        © 2026 Pad Koi · A project of ScriptySphere · Prototype
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ADD STORE MODAL -->
+  <div class="modal" id="addStoreModal">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <div>
+          <h2>Add a store</h2>
+          <p style="font-size:12px;color:var(--muted);">
+            Help improve the Pad Koi map.
+          </p>
+        </div>
+
+        <button class="close-btn" onclick="closeModal()">×</button>
+      </div>
+
+      <form onsubmit="submitStore(event)">
+
+        <div class="form-group">
+          <label>Store name</label>
+          <input required placeholder="e.g. Rahman Pharmacy" />
+        </div>
+
+        <div class="form-group">
+          <label>Store type</label>
+          <select required>
+            <option value="">Select type</option>
+            <option>Pharmacy</option>
+            <option>Supermarket</option>
+            <option>Convenience Store</option>
+            <option>Emergency Point</option>
+            <option>Vending Machine</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Address / area</label>
+          <input required placeholder="e.g. Dhanmondi, Dhaka" />
+        </div>
+
+        <div class="form-group">
+          <label>Additional information</label>
+          <textarea placeholder="Optional information about availability..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;">
+          Submit Location
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+
+
+  <div class="toast" id="toast"></div>
+
+
+  <!-- LEAFLET -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+
+    /*
+      ============================================================
+      PAD KOI
+      Single-file prototype
+      ============================================================
+    */
+
+    // ------------------------------------------------------------
+    // DEMO STORE DATA
+    // Replace these with your real verified locations later.
+    // ------------------------------------------------------------
+
+    const stores = [
+      {
+        id: 1,
+        name: "Dhanmondi Community Pharmacy",
+        type: "Pharmacy",
+        category: "pharmacy",
+        lat: 23.7465,
+        lng: 90.3760,
+        address: "Dhanmondi 27, Dhaka",
+        open: true,
+        verified: true,
+        emergency: true,
+        products: ["Regular Pads", "Heavy Flow", "Pantyliners"],
+        lastVerified: "2 days ago"
+      },
+      {
+        id: 2,
+        name: "Green Road Family Pharmacy",
+        type: "Pharmacy",
+        category: "pharmacy",
+        lat: 23.7410,
+        lng: 90.3880,
+        address: "Green Road, Dhaka",
+        open: true,
+        verified: true,
+        emergency: false,
+        products: ["Regular Pads", "Overnight"],
+        lastVerified: "1 day ago"
+      },
+      {
+        id: 3,
+        name: "Agora Supermarket",
+        type: "Supermarket",
+        category: "supermarket",
+        lat: 23.7512,
+        lng: 90.3854,
+        address: "Dhanmondi, Dhaka",
+        open: true,
+        verified: true,
+        emergency: false,
+        products: ["Regular Pads", "Heavy Flow", "Overnight", "Pantyliners"],
+        lastVerified: "3 days ago"
+      },
+      {
+        id: 4,
+        name: "Community Care Point",
+        type: "Emergency Point",
+        category: "emergency",
+        lat: 23.7555,
+        lng: 90.3700,
+        address: "Mohammadpur, Dhaka",
+        open: true,
+        verified: false,
+        emergency: true,
+        products: ["Regular Pads"],
+        lastVerified: "Community reported"
+      },
+      {
+        id: 5,
+        name: "Lalmatia Health Store",
+        type: "Pharmacy",
+        category: "pharmacy",
+        lat: 23.7582,
+        lng: 90.3658,
+        address: "Lalmatia, Dhaka",
+        open: false,
+        verified: true,
+        emergency: false,
+        products: ["Regular Pads", "Overnight"],
+        lastVerified: "5 days ago"
+      },
+      {
+        id: 6,
+        name: "Shyamoli Convenience Store",
+        type: "Convenience Store",
+        category: "convenience",
+        lat: 23.7670,
+        lng: 90.3630,
+        address: "Shyamoli, Dhaka",
+        open: true,
+        verified: false,
+        emergency: false,
+        products: ["Regular Pads"],
+        lastVerified: "Community reported"
+      },
+      {
+        id: 7,
+        name: "Farmgate Family Pharmacy",
+        type: "Pharmacy",
+        category: "pharmacy",
+        lat: 23.7575,
+        lng: 90.3895,
+        address: "Farmgate, Dhaka",
+        open: true,
+        verified: true,
+        emergency: false,
+        products: ["Regular Pads", "Heavy Flow"],
+        lastVerified: "2 days ago"
+      },
+      {
+        id: 8,
+        name: "Tejgaon Community Store",
+        type: "Convenience Store",
+        category: "convenience",
+        lat: 23.7620,
+        lng: 90.3980,
+        address: "Tejgaon, Dhaka",
+        open: true,
+        verified: false,
+        emergency: false,
+        products: ["Regular Pads", "Pantyliners"],
+        lastVerified: "Community reported"
+      }
+    ];
+
+
+    // ------------------------------------------------------------
+    // MAP INITIALISATION
+    // ------------------------------------------------------------
+
+    const dhakaCenter = [23.7508, 90.3851];
+
+    const map = L.map("map", {
+      zoomControl: true
+    }).setView(dhakaCenter, 13);
+
+    const heroMap = L.map("heroMap", {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false
+    }).setView(dhakaCenter, 13);
+
+    const tileURL =
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+    const tileOptions = {
+      attribution: '&copy; OpenStreetMap contributors'
+    };
+
+    L.tileLayer(tileURL, tileOptions).addTo(map);
+    L.tileLayer(tileURL, tileOptions).addTo(heroMap);
+
+
+    let markers = [];
+    let heroMarkers = [];
+    let userMarker = null;
+    let currentFilter = "all";
+    let currentLocation = null;
+
+
+    // ------------------------------------------------------------
+    // CUSTOM MARKER
+    // ------------------------------------------------------------
+
+    const pinkIcon = L.divIcon({
+      className: "",
+      html: `
+        <div style="
+          width:34px;
+          height:34px;
+          border-radius:50% 50% 50% 0;
+          transform:rotate(-45deg);
+          background:#e83e8c;
+          border:4px solid white;
+          box-shadow:0 4px 15px rgba(0,0,0,.25);
+        ">
+          <div style="
+            width:9px;
+            height:9px;
+            border-radius:50%;
+            background:white;
+            position:absolute;
+            left:9px;
+            top:9px;
+          "></div>
+        </div>
+      `,
+      iconSize: [34, 34],
+      iconAnchor: [17, 34]
+    });
+
+
+    // ------------------------------------------------------------
+    // DISTANCE CALCULATION
+    // ------------------------------------------------------------
+
+    function distanceKm(lat1, lon1, lat2, lon2) {
+
+      const R = 6371;
+
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+
+    function formatDistance(km) {
+
+      if (km < 1) {
+        return Math.round(km * 1000) + " m";
+      }
+
+      return km.toFixed(1) + " km";
+    }
+
+
+    // ------------------------------------------------------------
+    // STORE DISTANCES
+    // ------------------------------------------------------------
+
+    function getDistance(store) {
+
+      const location = currentLocation || {
+        lat: dhakaCenter[0],
+        lng: dhakaCenter[1]
+      };
+
+      return distanceKm(
+        location.lat,
+        location.lng,
+        store.lat,
+        store.lng
+      );
+    }
+
+
+    // ------------------------------------------------------------
+    // STORE FILTERING
+    // ------------------------------------------------------------
+
+    function getFilteredStores() {
+
+      const query =
+        document.getElementById("storeSearch").value
+          .toLowerCase()
+          .trim();
+
+      let result = stores.filter(store => {
+
+        const searchable = [
+          store.name,
+          store.type,
+          store.address,
+          ...store.products
+        ].join(" ").toLowerCase();
+
+        const matchesSearch =
+          !query || searchable.includes(query);
+
+        let matchesFilter = true;
+
+        if (currentFilter === "open") {
+          matchesFilter = store.open;
+        }
+
+        if (currentFilter === "verified") {
+          matchesFilter = store.verified;
+        }
+
+        if (currentFilter === "pharmacy") {
+          matchesFilter = store.category === "pharmacy";
+        }
+
+        if (currentFilter === "supermarket") {
+          matchesFilter = store.category === "supermarket";
+        }
+
+        if (currentFilter === "emergency") {
+          matchesFilter = store.emergency;
+        }
+
+        return matchesSearch && matchesFilter;
+      });
+
+      return result.sort(
+        (a, b) => getDistance(a) - getDistance(b)
+      );
+    }
+
+
+    // ------------------------------------------------------------
+    // RENDER STORES
+    // ------------------------------------------------------------
+
+    function renderStores() {
+
+      const list = document.getElementById("storeList");
+      const filtered = getFilteredStores();
+
+      list.innerHTML = "";
+
+      document.getElementById("resultTitle").textContent =
+        `${filtered.length} location${filtered.length === 1 ? "" : "s"}`;
+
+      if (!filtered.length) {
+
+        list.innerHTML = `
+          <div style="padding:30px;text-align:center;">
+            <div style="font-size:30px;margin-bottom:8px;">⌕</div>
+            <strong>No locations found</strong>
+            <p style="font-size:12px;color:#6b7280;margin-top:5px;">
+              Try another search or filter.
+            </p>
+          </div>
+        `;
+
+        return;
+      }
+
+      filtered.forEach(store => {
+
+        const card = document.createElement("div");
+
+        card.className = "store-card";
+
+        card.id = "store-" + store.id;
+
+        card.onclick = () => focusStore(store.id);
+
+        card.innerHTML = `
+
+          <div class="store-top">
+
+            <div>
+              <div class="store-name">
+                ${store.name}
+              </div>
+
+              <div class="store-type">
+                ${store.type}
+              </div>
+            </div>
+
+            <div class="distance">
+              ${formatDistance(getDistance(store))}
+            </div>
+
+          </div>
+
+          <div class="store-address">
+            ${store.address}
+          </div>
+
+          <div>
+
+            <span class="status ${store.open ? "" : "closed"}">
+
+              <span class="status-dot"></span>
+
+              ${store.open ? "Open now" : "Closed"}
+
+            </span>
+
+            ${
+              store.verified
+                ? `<span class="verified">✓ Verified</span>`
+                : `<span style="color:#f59e0b;font-size:11px;font-weight:800;margin-left:7px;">
+                    Community reported
+                  </span>`
+            }
+
+          </div>
+
+          <div class="store-actions">
+
+            <button
+              class="small-btn primary"
+              onclick="event.stopPropagation(); getDirections(${store.lat}, ${store.lng})"
+            >
+              Directions
+            </button>
+
+            <button
+              class="small-btn"
+              onclick="event.stopPropagation(); showStore(${store.id})"
+            >
+              Details
+            </button>
+
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+
+    // ------------------------------------------------------------
+    // RENDER MAP MARKERS
+    // ------------------------------------------------------------
+
+    function renderMarkers() {
+
+      markers.forEach(marker => map.removeLayer(marker));
+
+      markers = [];
+
+      const filtered = getFilteredStores();
+
+      filtered.forEach(store => {
+
+        const marker = L.marker(
+          [store.lat, store.lng],
+          { icon: pinkIcon }
+        ).addTo(map);
+
+        marker.bindPopup(`
+
+          <div style="min-width:210px;">
+
+            <strong style="font-size:15px;">
+              ${store.name}
+            </strong>
+
+            <div style="font-size:12px;color:#6b7280;margin-top:2px;">
+              ${store.type}
+            </div>
+
+            <div style="font-size:12px;margin-top:7px;">
+              ${store.address}
+            </div>
+
+            <div style="
+              margin-top:8px;
+              color:${store.open ? "#16a34a" : "#dc2626"};
+              font-weight:800;
+              font-size:12px;
+            ">
+              ${store.open ? "● Open now" : "● Closed"}
+            </div>
+
+            <button
+              onclick="getDirections(${store.lat},${store.lng})"
+              style="
+                margin-top:10px;
+                border:0;
+                background:#e83e8c;
+                color:white;
+                padding:8px 11px;
+                border-radius:8px;
+                font-weight:800;
+                cursor:pointer;
+              "
+            >
+              Get Directions
+            </button>
+
+          </div>
+        `);
+
+        markers.push(marker);
+      });
+    }
+
+
+    // ------------------------------------------------------------
+    // HERO MAP
+    // ------------------------------------------------------------
+
+    stores.slice(0, 5).forEach(store => {
+
+      const marker = L.circleMarker(
+        [store.lat, store.lng],
+        {
+          radius: 7,
+          color: "#e83e8c",
+          fillColor: "#e83e8c",
+          fillOpacity: .85,
+          weight: 3
+        }
+      ).addTo(heroMap);
+
+      heroMarkers.push(marker);
+    });
+
+
+    // ------------------------------------------------------------
+    // FOCUS STORE
+    // ------------------------------------------------------------
+
+    function focusStore(id) {
+
+      const store = stores.find(s => s.id === id);
+
+      if (!store) return;
+
+      map.setView(
+        [store.lat, store.lng],
+        16,
+        { animate: true }
+      );
+
+      const marker = markers.find(m => {
+
+        const pos = m.getLatLng();
+
+        return (
+          Math.abs(pos.lat - store.lat) < 0.00001 &&
+          Math.abs(pos.lng - store.lng) < 0.00001
+        );
+
+      });
+
+      if (marker) {
+        marker.openPopup();
+      }
+
+      document
+        .querySelectorAll(".store-card")
+        .forEach(card => card.classList.remove("active"));
+
+      const card = document.getElementById("store-" + id);
+
+      if (card) {
+        card.classList.add("active");
+      }
+    }
+
+
+    // ------------------------------------------------------------
+    // STORE DETAILS
+    // ------------------------------------------------------------
+
+    function showStore(id) {
+
+      const store = stores.find(s => s.id === id);
+
+      if (!store) return;
+
+      showToast(
+        `${store.name} · ${store.products.join(", ")}`
+      );
+
+      focusStore(id);
+    }
+
+
+    // ------------------------------------------------------------
+    // DIRECTIONS
+    // ------------------------------------------------------------
+
+    function getDirections(lat, lng) {
+
+      const url =
+        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+
+    // ------------------------------------------------------------
+    // SEARCH
+    // ------------------------------------------------------------
+
+    function searchStores() {
+
+      const input =
+        document.getElementById("heroSearch");
+
+      document.getElementById("storeSearch").value =
+        input.value;
+
+      filterStores();
+
+      document
+        .getElementById("find")
+        .scrollIntoView({
+          behavior: "smooth"
+        });
+    }
+
+
+    function filterStores() {
+
+      renderStores();
+      renderMarkers();
+
+    }
+
+
+    // ------------------------------------------------------------
+    // FILTER BUTTONS
+    // ------------------------------------------------------------
+
+    document.querySelectorAll(".filter-chip")
+      .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          document
+            .querySelectorAll(".filter-chip")
+            .forEach(btn => btn.classList.remove("active"));
+
+          button.classList.add("active");
+
+          currentFilter =
+            button.dataset.filter;
+
+          filterStores();
+
+        });
+
+      });
+
+
+    // ------------------------------------------------------------
+    // GEOLOCATION
+    // ------------------------------------------------------------
+
+    function useMyLocation() {
+
+      if (!navigator.geolocation) {
+
+        showToast(
+          "Your browser does not support location services."
+        );
+
+        return;
+      }
+
+      showToast("Finding your location...");
+
+      navigator.geolocation.getCurrentPosition(
+
+        position => {
+
+          currentLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+
+          if (userMarker) {
+            map.removeLayer(userMarker);
+          }
+
+          userMarker =
+            L.circleMarker(
+              [
+                currentLocation.lat,
+                currentLocation.lng
+              ],
+              {
+                radius: 9,
+                color: "#8b5cf6",
+                fillColor: "#8b5cf6",
+                fillOpacity: .85,
+                weight: 4
+              }
+            )
+            .addTo(map)
+            .bindPopup("You are here");
+
+          map.setView(
+            [
+              currentLocation.lat,
+              currentLocation.lng
+            ],
+            14
+          );
+
+          filterStores();
+
+          showToast(
+            "Location found. Showing nearby locations."
+          );
+
+        },
+
+        error => {
+
+          showToast(
+            "Location permission was not available. Showing demo locations."
+          );
+
+        },
+
+        {
+          enableHighAccuracy: true,
+          timeout: 10000
+        }
+      );
+    }
+
+
+    // ------------------------------------------------------------
+    // EMERGENCY MODE
+    // ------------------------------------------------------------
+
+    function activateEmergency() {
+
+      currentFilter = "emergency";
+
+      document
+        .querySelectorAll(".filter-chip")
+        .forEach(btn => {
+
+          btn.classList.toggle(
+            "active",
+            btn.dataset.filter === "emergency"
+          );
+
+        });
+
+      filterStores();
+
+      document
+        .getElementById("find")
+        .scrollIntoView({
+          behavior: "smooth"
+        });
+
+      showToast(
+        "Emergency mode activated."
+      );
+    }
+
+
+    // ------------------------------------------------------------
+    // RESET MAP
+    // ------------------------------------------------------------
+
+    function resetMap() {
+
+      currentLocation = null;
+
+      if (userMarker) {
+
+        map.removeLayer(userMarker);
+
+        userMarker = null;
+      }
+
+      map.setView(
+        dhakaCenter,
+        13
+      );
+
+      document.getElementById("storeSearch").value = "";
+
+      currentFilter = "all";
+
+      document
+        .querySelectorAll(".filter-chip")
+        .forEach(btn => {
+
+          btn.classList.toggle(
+            "active",
+            btn.dataset.filter === "all"
+          );
+
+        });
+
+      filterStores();
+    }
+
+
+    // ------------------------------------------------------------
+    // ADD STORE MODAL
+    // ------------------------------------------------------------
+
+    function openAddStore() {
+
+      document
+        .getElementById("addStoreModal")
+        .classList.add("open");
+
+    }
+
+
+    function closeModal() {
+
+      document
+        .getElementById("addStoreModal")
+        .classList.remove("open");
+
+    }
+
+
+    function submitStore(event) {
+
+      event.preventDefault();
+
+      closeModal();
+
+      event.target.reset();
+
+      showToast(
+        "Thank you. Your location suggestion has been recorded for review."
+      );
+    }
+
+
+    // ------------------------------------------------------------
+    // TOAST
+    // ------------------------------------------------------------
+
+    let toastTimer;
+
+    function showToast(message) {
+
+      const toast =
+        document.getElementById("toast");
+
+      toast.textContent = message;
+
+      toast.classList.add("show");
+
+      clearTimeout(toastTimer);
+
+      toastTimer = setTimeout(() => {
+
+        toast.classList.remove("show");
+
+      }, 3500);
+
+    }
+
+
+    // ------------------------------------------------------------
+    // MOBILE MENU
+    // ------------------------------------------------------------
+
+    function toggleMobileMenu() {
+
+      const nav =
+        document.querySelector("nav");
+
+      const visible =
+        nav.style.display === "flex";
+
+      nav.style.display =
+        visible ? "" : "flex";
+
+      if (!visible) {
+
+        nav.style.position = "absolute";
+        nav.style.top = "66px";
+        nav.style.left = "0";
+        nav.style.right = "0";
+        nav.style.background = "white";
+        nav.style.padding = "18px";
+        nav.style.flexDirection = "column";
+        nav.style.alignItems = "flex-start";
+        nav.style.borderBottom = "1px solid #eadde4";
+
+      }
+
+    }
+
+
+    // ------------------------------------------------------------
+    // SIMPLE LANGUAGE TOGGLE
+    // ------------------------------------------------------------
+
+    let bangla = false;
+
+    document
+      .getElementById("languageBtn")
+      .addEventListener("click", () => {
+
+        bangla = !bangla;
+
+        document.getElementById("languageBtn").textContent =
+          bangla ? "English" : "বাংলা";
+
+        if (bangla) {
+
+          document.querySelector(".hero h1").innerHTML =
+            `প্যাড কোথায়?<br><span>কাছেই খুঁজে নিন।</span>`;
+
+          document.querySelector(".hero p").textContent =
+            "আপনার আশেপাশে স্যানিটারি প্যাড পাওয়া যেতে পারে এমন স্থান খুঁজে নিন।";
+
+          document.getElementById("heroSearch").placeholder =
+            "এলাকা, দোকান বা পণ্যের নাম লিখুন...";
+
+          showToast("বাংলা মোড চালু হয়েছে");
+
+        } else {
+
+          document.querySelector(".hero h1").innerHTML =
+            `Pad Koi?<br><span>Find pads near you.</span>`;
+
+          document.querySelector(".hero p").textContent =
+            "A simple way to discover nearby stores, pharmacies and emergency access points where sanitary pads may be available.";
+
+          document.getElementById("heroSearch").placeholder =
+            "Search your area, store or product...";
+
+          showToast("English mode enabled");
+
+        }
+
+      });
+
+
+    // ------------------------------------------------------------
+    // CLOSE MODAL ON BACKDROP
+    // ------------------------------------------------------------
+
+    document
+      .getElementById("addStoreModal")
+      .addEventListener("click", event => {
+
+        if (
+          event.target.id === "addStoreModal"
+        ) {
+          closeModal();
+        }
+
+      });
+
+
+    // ------------------------------------------------------------
+    // INITIAL RENDER
+    // ------------------------------------------------------------
+
+    renderStores();
+    renderMarkers();
+
+  </script>
+
+</body>
+</html>
